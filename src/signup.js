@@ -2,8 +2,7 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const { MongoClient } = require("mongodb");
-const emailTester = require("../src/validators/emailValidator");
-const newPasswordTester = require("../src/validators/passwordValidator");
+const middleware  = require("../src/middleware/validatorMiddleware");
 
 const app = express();
 let db;
@@ -19,22 +18,24 @@ MongoClient.connect(
 
 app.use("/", express.static(path.join(__dirname, "static")));
 app.use(bodyParser.json());
-app.post("/api/register", async (req, res) => {
-  const { email, password, firstName, lastName, gender, phone } = req.body;
-  try {
-    if (!emailTester(email)) {
-      res.status(404).json({ error: "please enter email" });
-      return;
-    } else if (!newPasswordTester(password)) {
-      res.status(404).json({ error: "please enter password" });
-      return;
-    } else {
+app.post(
+  "/api/register",
+  [
+    middleware.emailValidation,
+    middleware.passwordValidation,
+    middleware.nameValidation,
+    middleware.phoneValidation,
+    middleware.genderValidation,
+  ],
+  async (req, res) => {
+    const { email, password, firstName, lastName, gender, phone } = req.body;
+    try {
       db.collection("data").insertOne(
-        { email, password, firstName, lastName, gender, phone},
+        { email, password, firstName, lastName, gender, phone },
         function (err, info) {
           res.send().status(200);
         }
       );
-    }
-  } catch (e) {}
-});
+    } catch (e) {}
+  }
+);
