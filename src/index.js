@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const { MongoClient } = require("mongodb");
-const middleware  = require("../src/middleware/validatorMiddleware");
+const middleware  = require("./middleware/validatorMiddleware");
 
 const app = express();
 let db;
